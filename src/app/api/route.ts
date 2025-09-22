@@ -1,0 +1,1 @@
+// when the game is inited,get player and dealer 2 random cards respectively
