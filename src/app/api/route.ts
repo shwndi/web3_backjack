@@ -17,11 +17,13 @@ const gameState: {
     dealerHand: Card[],
     deck: Card[],
     message: string,
+    score: number
 } = {
     playerHand: [],
     dealerHand: [],
     deck: initialDeck,
     message: '',
+    score: 0
 }
 function getRandomCard(desk: Card[], count: number) {
     const randomIndexSet = new Set<number>()
@@ -51,6 +53,7 @@ export function GET() {
         playerHand: gameState.playerHand,
         dealerHand: [gameState.dealerHand[0], { rank: "?", suit: "?" } as Card],
         message: gameState.message,
+        score: gameState.score
     }), {
         status: 200,
     })
@@ -71,8 +74,10 @@ export async function POST(request: Request) {
         // player hand is less than 21: continue player can hit or stand 
         if (playerHandValue === 21) {
             gameState.message = "Blackjack! player wins."
+            gameState.score += 100
         } else if (playerHandValue > 21) {
             gameState.message = "Bust! player loses."
+            gameState.score -= 100
         }
 
     } else if (action === "stand") {
@@ -87,14 +92,18 @@ export async function POST(request: Request) {
         const dealerHandValue = calculateHandValue(gameState.dealerHand)
         if (dealerHandValue > 21) {
             gameState.message = "Dealer busts! player wins."
+            gameState.score += 100
         } else if (dealerHandValue === 21) {
             gameState.message = "Dealer blackjack! player loses."
+            gameState.score -= 100
         } else {
             const playerHandValue = calculateHandValue(gameState.playerHand)
             if (playerHandValue > dealerHandValue) {
                 gameState.message = "Player wins."
+                gameState.score += 100
             } else if (playerHandValue < dealerHandValue) {
                 gameState.message = "Player loses."
+                gameState.score -= 100
             } else {
                 gameState.message = "Draw."
             }
@@ -123,6 +132,7 @@ export async function POST(request: Request) {
             ? [gameState.dealerHand[0], { rank: "?", suit: "?" } as Card]
             : gameState.dealerHand,
         message: gameState.message,
+        score: gameState.score
     }), {
         status: 200,
     })

@@ -21,6 +21,7 @@ export default function Page() {
   const [message, setMessage] = useState("")
   const [playerHand, setPlayerHand] = useState<{ rank: string, suit: string }[]>([])
   const [dealerHand, setDealerHand] = useState<{ rank: string, suit: string }[]>([])
+  const [score, setScore] = useState(0)
   // useEffect用来在页面加载时执行一些操作
   // 这里的意思是：当页面第一次加载时，把initialDeck（完整的牌组）设置到deck状态中
   useEffect(() => {
@@ -31,6 +32,7 @@ export default function Page() {
       setPlayerHand(data.playerHand)
       setDealerHand(data.dealerHand)
       setMessage(data.message)
+      setScore(data.score)
     }
     initGame()
     // setDeck(initialDeck)
@@ -48,6 +50,7 @@ export default function Page() {
     setPlayerHand(data.playerHand)
     setDealerHand(data.dealerHand)
     setMessage(data.message)
+    setScore(data.score)
   }
   async function handleStand() {
     const respose = await fetch("/api",{
@@ -60,6 +63,7 @@ export default function Page() {
     setPlayerHand(data.playerHand)
     setDealerHand(data.dealerHand)
     setMessage(data.message)
+    setScore(data.score)
   }
 
   async function handleReset() {
@@ -68,12 +72,13 @@ export default function Page() {
     setPlayerHand(data.playerHand)
     setDealerHand(data.dealerHand)
     setMessage(data.message)
+    setScore(data.score)
   }
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-300">
       <h1 className="text-3xl bold ">welcome to web3 game Black jack</h1>
       {/* <h2 className="text-2xl bold">Message: player wins/dealer wins:Bllckjack wins!</h2> */}
-      <h2 className={`text-2xl bold ${message.includes("win") ?"bg-green-300":"bg-amber-300"}`}>{message}</h2>
+      <h2 className={`text-2xl bold ${message.includes("win") ?"bg-green-300":"bg-amber-300"}`}>Score:{score} { message}</h2>
       <div className="mt-4" >
         <h2 >Dealer`s hand</h2>
         <div className="flex flex-row gap-2">
