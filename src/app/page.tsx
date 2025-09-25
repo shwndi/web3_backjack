@@ -1,6 +1,5 @@
 "use client"
 
-import { METHODS } from "http"
 import { useEffect, useState } from "react"
 
 // 这是一个React函数组件
@@ -27,14 +26,15 @@ export default function Page() {
   useEffect(() => {
     // 使用setDeck函数把initialDeck赋值给deck状态
     const initGame = async ()=>{
-      const respose = await fetch("/api",{method:"GET"})
-      const data = await respose.json()
+      const response = await fetch("/api",{method:"GET"})
+      const data = await response.json()
       setPlayerHand(data.playerHand)
       setDealerHand(data.dealerHand)
       setMessage(data.message)
       setScore(data.score)
     }
     initGame()
+    
     // setDeck(initialDeck)
     // setWinner("player")
     // setMessage("Black Jack!")

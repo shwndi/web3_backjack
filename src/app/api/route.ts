@@ -1,4 +1,8 @@
 import { get } from "http"
+import { setPlayerScore, getPlayerScore } from "../lib/firebase"
+
+const defaultPlayer = "defaultPlayer"
+
 
 // when the game is inited,get player and dealer 2 random cards respectively
 export interface Card {
@@ -36,7 +40,7 @@ function getRandomCard(desk: Card[], count: number) {
     return [randomCard, remainingDesk]
 }
 
-export function GET() {
+export async function GET() {
     gameState.playerHand = []
     gameState.dealerHand = []
     gameState.deck = initialDeck
@@ -48,6 +52,14 @@ export function GET() {
     gameState.dealerHand = dealerCards
     gameState.deck = newDesk
     gameState.message = ""
+
+    try {
+        const response = await getPlayerScore(defaultPlayer);
+        gameState.score = response || 0;
+    } catch (error) {
+        console.error('Failed to get player score:', error);
+        gameState.score = 0;
+    }
 
     return new Response(JSON.stringify({
         playerHand: gameState.playerHand,
@@ -126,6 +138,7 @@ export async function POST(request: Request) {
             status: 400,
         })
     }
+    await setPlayerScore(defaultPlayer, gameState.score)
     return new Response(JSON.stringify({
         playerHand: gameState.playerHand,
         dealerHand: gameState.message === ""
