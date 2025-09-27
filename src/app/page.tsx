@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
-import { useAccount } from "wagmi"
+import { useAccount, useSignMessage } from "wagmi"
+import { sign } from "crypto"
 
 // 这是一个React函数组件
 export default function Page() {
@@ -23,26 +24,36 @@ export default function Page() {
   const [playerHand, setPlayerHand] = useState<{ rank: string, suit: string }[]>([])
   const [dealerHand, setDealerHand] = useState<{ rank: string, suit: string }[]>([])
   const [score, setScore] = useState(0)
-  const {address, isConnected} = useAccount()
+  const { address, isConnected } = useAccount()
+  const [isSigned, setIsSigned] = useState(false)
+  const { signMessageAsync } = useSignMessage()
   // useEffect用来在页面加载时执行一些操作
   // 这里的意思是：当页面第一次加载时，把initialDeck（完整的牌组）设置到deck状态中
-  useEffect(() => {
-    // 使用setDeck函数把initialDeck赋值给deck状态
-    const initGame = async () => {
+  const initGame = async () => {
       const response = await fetch("/api", { method: "GET" })
       const data = await response.json()
       setPlayerHand(data.playerHand)
       setDealerHand(data.dealerHand)
       setMessage(data.message)
       setScore(data.score)
-      console.log(`address: ${address}`)
-      console.log(`isConnected: ${isConnected}`)
     }
-    initGame()
-    // setDeck(initialDeck)
-    // setWinner("player")
-    // setMessage("Black Jack!")
-  }, []) // 这个[]表示只在页面第一次加载时执行一次
+  // useEffect(() => {
+  //   // 使用setDeck函数把initialDeck赋值给deck状态
+  //   const initGame = async () => {
+  //     const response = await fetch("/api", { method: "GET" })
+  //     const data = await response.json()
+  //     setPlayerHand(data.playerHand)
+  //     setDealerHand(data.dealerHand)
+  //     setMessage(data.message)
+  //     setScore(data.score)
+  //     console.log(`address: ${address}`)
+  //     console.log(`isConnected: ${isConnected}`)
+  //   }
+  //   initGame()
+  //   // setDeck(initialDeck)
+  //   // setWinner("player")
+  //   // setMessage("Black Jack!")
+  // }, []) // 这个[]表示只在页面第一次加载时执行一次
   async function handleHit() {
     const respose = await fetch("/api", {
       method: "POST",
@@ -78,9 +89,38 @@ export default function Page() {
     setMessage(data.message)
     setScore(data.score)
   }
+  async function handleSign() {
+    const message = `welcome to the game Black jack at ${new Date().toString()}`
+    const signature = await signMessageAsync({ message })
+    const respose = await fetch("/api", {
+      method: "POST",
+      body: JSON.stringify({
+        action: "auth",
+        address: address,
+        message: message,
+        signature: signature,
+      })
+    })
+    if (respose.status === 200) {
+      const data = await respose.json()
+      setIsSigned(true)
+      initGame()
+    }
+  
+  }
+  if (!isSigned) {
+      return (
+        <div className="flex flex-col gap-2 items-center justify-center h-screen bg-gray-300">
+          <ConnectButton />
+          <button onClick ={handleSign} className="brouder-black bg-amber-300  rounded-md p-2">Sign with you wollet</button>
+        </div> 
+      )
+    }
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-300">
+    <div className="flex flex-col gap-2 items-center justify-center h-screen bg-gray-300">
+      {/* <ConnectButton /> 这个表示连接钱包的按钮 */}
       <ConnectButton />
+      {/* <button onClick={handleSign} className="brouder-black bg-amber-300  rounded-md p-2">Sign with you wollet</button> */}
       <h1 className="text-3xl bold ">welcome to web3 game Black jack</h1>
       {/* <h2 className="text-2xl bold">Message: player wins/dealer wins:Bllckjack wins!</h2> */}
       <h2 className={`text-2xl bold ${message.includes("win") ? "bg-green-300" : "bg-amber-300"}`}>Score:{score} {message}</h2>

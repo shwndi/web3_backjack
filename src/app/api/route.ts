@@ -1,5 +1,6 @@
 import { get } from "http"
 import { setPlayerScore, getPlayerScore } from "../lib/firebase"
+import { verifyMessage } from "viem"
 
 const defaultPlayer = "defaultPlayer"
 
@@ -73,7 +74,28 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-    const { action } = await request.json()
+
+    const body = await request.json()
+    const { action } = body
+    if (action === "auth") {
+        const { address, message, signature } = body
+        const isValid = await verifyMessage({
+            address,
+            message,
+            signature
+        })
+        if (!isValid) {
+            return new Response(JSON.stringify({
+                message: "Invalid signature",
+
+            }), { status: 400 })
+        } else {
+            return new Response(JSON.stringify({
+                message: "valid signature",
+            }), { status: 200 })
+        }
+
+    }
     if (action === "hit") {
         // when hit is clicked ,get a random card from the deck and add it to the player's hand
         const [randomCard, newDesk] = getRandomCard(gameState.deck, 1)
